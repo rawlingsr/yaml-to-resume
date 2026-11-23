@@ -1,7 +1,7 @@
 import { defineConfig } from "tsdown";
 
-// Builds the published files in dist/. Inside this workspace, package.json "exports" point at
-// src/ instead; publishConfig.exports swaps in these dist/ paths when the package is packed.
+// Builds the published files in dist/. In this repo (and in GitHub installs), package.json "exports"
+// point at src/ instead; publishConfig.exports swaps in these dist/ paths when the package is packed.
 export default defineConfig({
   entry: {
     index: "src/index.ts",
