@@ -25,8 +25,12 @@ entry points, or exports change.
 
 `exports` point at TypeScript source in `src/`, and GitHub installs don't build anything, so consumers must compile
 TypeScript themselves (the site has `transpilePackages: ["yaml-to-resume"]` in `next.config.ts`). That's why `src`
-is in `files`: pnpm packs git-hosted dependencies using `files`, and `dist/` is gitignored. pnpm does **not** apply
-`publishConfig.exports` to git installs.
+is in `files`: pnpm and npm pack git-hosted dependencies using `files`, and `dist/` is gitignored. pnpm does **not**
+apply `publishConfig.exports` to git installs.
+
+Until there's an npm release, `README.md` documents the GitHub install: the `github:...#semver:` command, the
+`transpilePackages` line in the Next.js example (a Next 16 build without it fails with "Unknown module type" on
+`src/*.ts`), and "works in bundles as long as your bundler compiles it" instead of "runs anywhere".
 
 To release: bump `version`, commit, tag `vX.Y.Z`, push with tags. Then in the site, `pnpm update yaml-to-resume`
 (the `#semver:` spec matches the tags) and commit its lockfile. To try unpushed changes in the site, it runs
@@ -100,6 +104,10 @@ dist/             # build output, gitignored
   Ryan's site, on Vercel).
 - **Docs:** when the public API, props, or YAML rules change, update `README.md` and, if relevant,
   `examples/resume.yaml` (its test catches drift in the example, not in the README prose).
+- **README for npm:** the README describes the GitHub install. Restore the npm wording first: the Install section,
+  the Next.js example without the `next.config.ts` / `transpilePackages` snippet, and the "runs anywhere JavaScript
+  does (browser, edge, Node)" line in "Without React, or without Node". Tag `v0.1.0` has that version verbatim
+  (`git show v0.1.0:README.md`).
 - **Before a release,** test the packed package outside this repo (done for 0.1.0, all passing):
   1. `pnpm build`, then `pnpm pack` into a scratch folder. Check with `tar -tzf` that the tarball has only `dist/`,
      `src/`, `examples/`, `README.md`, `LICENSE`, `package.json`, and that its `exports` point at `dist/`.

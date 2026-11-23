@@ -10,13 +10,16 @@ Write your resume once in YAML, and render it as a web page you can print to PDF
 
 ## Install
 
+`yaml-to-resume` isn't on npm yet. Install it from GitHub, pinned to a release:
+
 ```sh
-npm install yaml-to-resume
+npm install github:rawlingsr/yaml-to-resume#semver:^0.1.0
+# or: pnpm add github:rawlingsr/yaml-to-resume#semver:^0.1.0
 # React is only needed for the components:
 npm install react
 ```
 
-Requires Node.js 22 or later.
+Requires Node.js 22 or later. A GitHub install contains the TypeScript source, not compiled JavaScript, so it needs a bundler that compiles TypeScript from your dependencies. In Next.js that means one line of config (see [Use it in Next.js](#use-it-in-nextjs-app-router)).
 
 ## Write your resume
 
@@ -83,6 +86,19 @@ const resume = await loadResume({
 ```
 
 ## Use it in Next.js (App Router)
+
+Tell Next to compile the package, since the GitHub install is TypeScript source:
+
+```ts
+// next.config.ts
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  transpilePackages: ["yaml-to-resume"],
+};
+
+export default nextConfig;
+```
 
 Load the resume in a server component and render it:
 
@@ -153,7 +169,7 @@ From `yaml-to-resume/react`:
 
 ## Without React, or without Node
 
-The main entry, `yaml-to-resume`, has no file-system access and no React, so it runs anywhere JavaScript does (browser, edge, Node):
+The main entry, `yaml-to-resume`, has no file-system access and no React, so it also works in browser and edge bundles, as long as your bundler compiles it (see [Install](#install)):
 
 ```ts
 import { contactLinks, formatDateRange, normalizeResume, parseResumeYaml } from "yaml-to-resume";
