@@ -1,5 +1,16 @@
 import { contactLinks } from "./format";
-import type { Company, ContactInfo, DatesWorked, Intro, Position, RawResume, Resume, School, Skill } from "./types";
+import type {
+  Certification,
+  Company,
+  ContactInfo,
+  DatesWorked,
+  Intro,
+  Position,
+  RawResume,
+  Resume,
+  School,
+  Skill,
+} from "./types";
 
 // Throws instead of returning an Invalid Date, so bad YAML fails the build with a message that names the entry.
 function parseDate(value: unknown, field: string): Date {
@@ -80,6 +91,67 @@ export function getSkills({ skills }: {skills: Skill[]}): Skill[] {
   return return_skills;
 }
 
+
+// A plain year (2017 or "2017"). Never goes through `new Date`, which reads a bare number as milliseconds.
+function parseYear(value: unknown, owner: string): number {
+  const text = typeof value === "number" ? String(value) : value;
+  if (typeof text !== "string" || !/^\d{4}$/.test(text)) {
+    throw new Error(
+      `Invalid year for ${owner}: ${JSON.stringify(value)} in resume data. ` +
+      `Expected a four-digit year like 2017.`,
+    );
+  }
+  return Number(text);
+}
+
+function parseHttpUrl(value: unknown, owner: string): string {
+  let url: URL | null = null;
+  try {
+    url = typeof value === "string" ? new URL(value) : null;
+  } catch {
+    url = null;
+  }
+  if (!url || (url.protocol !== "http:" && url.protocol !== "https:")) {
+    throw new Error(
+      `Invalid url for ${owner}: ${JSON.stringify(value)} in resume data. ` +
+      `Expected a full http(s) URL, e.g. https://example.com/verify/123.`,
+    );
+  }
+  return value as string;
+}
+
+export function getCertifications({ certifications }: { certifications?: unknown }): Certification[] {
+  if (certifications == null) {
+    return [];
+  }
+  if (!Array.isArray(certifications)) {
+    throw new Error(
+      `Invalid certifications: ${JSON.stringify(certifications)} in resume data. Expected a list.`,
+    );
+  }
+
+  return certifications.map((entry: unknown, index) => {
+    const raw = isPlainObject(entry) ? entry : {};
+    if (typeof raw.name !== "string" || raw.name.trim() === "") {
+      throw new Error(
+        `Invalid name for certification #${index + 1}: ${JSON.stringify(raw.name)} in resume data. ` +
+        `Every certification needs a name.`,
+      );
+    }
+    const owner = `certification "${raw.name}"`;
+    const certification: Certification = { name: raw.name };
+    if (raw.issuer != null && raw.issuer !== "") {
+      certification.issuer = String(raw.issuer);
+    }
+    if (raw.year != null && raw.year !== "") {
+      certification.year = parseYear(raw.year, owner);
+    }
+    if (raw.url != null && raw.url !== "") {
+      certification.url = parseHttpUrl(raw.url, owner);
+    }
+    return certification;
+  });
+}
 
 export function getCompanies({companies}: {companies: Company[]}): Company[] {
   const return_companies: Company[] = [];
@@ -176,6 +248,7 @@ export function normalizeResume(raw: RawResume): Resume {
     intro: getIntro(raw),
     schools: getSchools(data),
     skills: getSkills(data),
+    certifications: getCertifications(raw),
     companies: getCompanies(data),
     contact_info: getContactInfo(data),
   };

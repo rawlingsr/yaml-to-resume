@@ -13,6 +13,15 @@ export interface Skill {
   description?: string;
 }
 
+export interface Certification {
+  name: string;
+  issuer?: string;
+  /** The year earned, e.g. 2017. */
+  year?: number;
+  /** A verification page; when set, the name links to it. Always http(s). */
+  url?: string;
+}
+
 export interface Company {
   name: string;
   dates_worked?: DatesWorked;
@@ -57,6 +66,7 @@ export interface Resume {
   intro: Intro | null;
   schools: School[];
   skills: Skill[];
+  certifications: Certification[];
   companies: Company[];
   contact_info: ContactInfo;
 }

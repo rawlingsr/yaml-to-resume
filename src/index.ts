@@ -1,4 +1,5 @@
 export type {
+  Certification,
   Company,
   ContactInfo,
   DatesWorked,
@@ -11,6 +12,7 @@ export type {
 } from "./types";
 export {
   deepMerge,
+  getCertifications,
   getCompanies,
   getContactInfo,
   getSchools,
