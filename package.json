@@ -1,6 +1,6 @@
 {
   "name": "yaml-to-resume",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Turn a resume written in YAML into validated data and React components.",
   "private": true,
   "license": "MIT",

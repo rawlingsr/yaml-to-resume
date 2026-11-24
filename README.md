@@ -13,8 +13,8 @@ Write your resume once in YAML, and render it as a web page you can print to PDF
 `yaml-to-resume` isn't on npm yet. Install it from GitHub, pinned to a release:
 
 ```sh
-npm install github:rawlingsr/yaml-to-resume#semver:^0.1.0
-# or: pnpm add github:rawlingsr/yaml-to-resume#semver:^0.1.0
+npm install github:rawlingsr/yaml-to-resume#semver:^0.2.0
+# or: pnpm add github:rawlingsr/yaml-to-resume#semver:^0.2.0
 # React is only needed for the components:
 npm install react
 ```
@@ -46,6 +46,7 @@ The fields:
 | `companies[].positions` | `title`, `description`, `achievements` (list), optional `dates_worked`. |
 | `schools` | `name`, `degree`, `description`, `website`, `graduation_date`, optional `still_attending: true` (Graduation date shown as "(Expected)"). |
 | `skills` | List of groups: `name` and `keywords` (list). |
+| `certifications` | Optional list: `name`, plus optional `issuer`, `year` (a four-digit year like `2017`) and `url` (a full `http` or `https` link, such as a verification page, which makes the name a link). |
 
 **Dates** are written `YYYY-MM`, e.g. `2023-11`.
 
@@ -142,10 +143,10 @@ import "yaml-to-resume/styles.css";
 
 From `yaml-to-resume/react`:
 
-- **`<Resume resume sections? className? introHeadingClassName?>`** renders the body. `sections` sets the order and which sections appear: any of `"intro"`, `"education"`, `"experience"`, `"skills"` (default: all four, in that order).
+- **`<Resume resume sections? className? introHeadingClassName?>`** renders the body. `sections` sets the order and which sections appear: any of `"intro"`, `"education"`, `"experience"`, `"skills"`, `"certifications"` (default: all five, in that order). The certifications section renders nothing when the list is empty.
 - **`<ResumeHeader name target_position? contact_info? logo? homeHref? renderIcon?>`** shows your name, title and contact links. `logo` is any React node (e.g. your `<Image>`); `homeHref` is where the name links (default `/`).
 - **`<ContactLinks info renderIcon?>`** shows just the contact links, e.g. for a contact page.
-- The sections on their own: `Introduction`, `Experience`, `Education`, `Skills` and `SkillsWithKeywords`.
+- The sections on their own: `Introduction`, `Experience`, `Education`, `Skills`, `SkillsWithKeywords` and `Certifications`.
 
 **Icons:** the package ships no icon set. Pass `renderIcon` to `<ResumeHeader>` or `<ContactLinks>` to add your own:
 
@@ -164,6 +165,7 @@ From `yaml-to-resume/react`:
 - `.resume-company`, `.resume-company-header`, `.resume-position`, `.resume-position-header`
 - `.resume-education`, `.resume-school-header`
 - `.resume-skills`, `.resume-skill-list-keywords`, `.resume-skill-keywords`
+- `.resume-certifications`, `.resume-certification-list`
 - `.resume-contact`, `.resume-contact-btn`, `.resume-contact-text`
 - `.resume-description`
 
@@ -204,6 +206,7 @@ This covers:
 - malformed dates and empty `dates_worked: []`
 - a missing `graduation_date`
 - a `github` or `linkedin` value that isn't a username or a URL on that site
+- a certification without a `name`, a `year` that isn't four digits, or a `url` that isn't a full `http`/`https` URL
 - a file whose top level isn't a `key: value` mapping
 - YAML syntax errors, which also name the file
 

@@ -4,7 +4,7 @@
 not yet published to npm (`"private": true` stays until Ryan decides to publish from his npm account).
 
 Its first user is Ryan's personal site (`~/projects/my-blog`, `github.com/rawlingsr/blog`), which installs it from
-GitHub: `"yaml-to-resume": "github:rawlingsr/yaml-to-resume#semver:^0.1.0"`.
+GitHub: `"yaml-to-resume": "github:rawlingsr/yaml-to-resume#semver:^0.2.0"`.
 
 ## Commands
 
@@ -54,11 +54,11 @@ tests. It includes `test/**/*.test.{ts,tsx}`.
 ```
 src/index.ts      # "." entry: types, parseResumeYaml, normalizeResume, getters, format helpers (no fs, no React)
 src/node.ts       # "./node" entry: readResumeYaml (raw merged), loadResume (normalized); explicit paths
-src/types.ts      # School, Skill, Company, Position, ContactInfo, DatesWorked, RawResume, Resume, Intro
-src/normalize.ts  # parseDate, parseDatesWorked, deepMerge, getters, normalizeResume
+src/types.ts      # School, Skill, Certification, Company, Position, ContactInfo, DatesWorked, RawResume, Resume, Intro
+src/normalize.ts  # parseDate, parseDatesWorked, parseYear, parseHttpUrl, deepMerge, getters, normalizeResume
 src/parse.ts      # parseResumeYaml(text, overrideText?): YAML → merged RawResume
 src/format.ts     # monthYear, formatDateRange, contactLinks (contact URL rules + validation)
-src/react/        # "./react" entry: Resume, ResumeHeader, ContactLinks, Introduction, Education, Experience, Skills(WithKeywords)
+src/react/        # "./react" entry: Resume, ResumeHeader, ContactLinks, Introduction, Education, Experience, Skills(WithKeywords), Certifications
 src/styles.css    # "./styles.css" entry: optional default styles for the components, incl. print page breaks
 test/             # tests + fixtures (see Tests)
 examples/         # resume.yaml + resume.override.yaml: fictional template users copy; shipped and tested
@@ -73,6 +73,10 @@ dist/             # build output, gitignored
   merged on top of the base.
 - `deepMerge`: objects merge key by key. Scalars, arrays, and `null` replace the base value, so overriding `skills`
   or `companies` replaces the whole list.
+- `certifications` is optional (missing or `null` → `[]`; a non-list throws). Each entry needs a non-blank `name`.
+  `year` must be a four-digit year (number or string, stored as a number; never passed to `new Date`, which reads a
+  bare number as milliseconds). `url` must be a full `http:`/`https:` URL. Errors name the entry. `<Certifications>`
+  renders nothing for an empty list, which is why it's safe in `<Resume>`'s default sections (last).
 - Companies **without** `dates_worked` (missing or `null`) are silently dropped; that's how to hide a company.
   Position `dates_worked` is optional. Dates are `[from]` or `[from, to]`; a `to` of null or empty renders as
   "Present".
