@@ -101,7 +101,9 @@
   .resume-education,
   .resume-education > *,
   .resume-skills,
-  .resume-skills > * {
+  .resume-skills > *,
+  .resume-certifications,
+  .resume-certifications > * {
     break-inside: avoid-page;
     page-break-inside: avoid;
   }

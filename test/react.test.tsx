@@ -88,6 +88,44 @@ describe("<Resume>", () => {
   });
 });
 
+describe("certifications section", () => {
+  const withCerts = {
+    ...resume,
+    certifications: [
+      { name: "CTFL", issuer: "ASTQB", year: 2017, url: "https://example.org/verify" },
+      { name: "Linux Essentials" },
+    ],
+  };
+
+  it("comes last in the default order", () => {
+    const [skills, certifications] = order(html(<Resume resume={withCerts} />), "<h2>Skills</h2>", "<h2>Certifications</h2>");
+    expect(skills).toBeGreaterThan(-1);
+    expect(skills).toBeLessThan(certifications);
+  });
+
+  it("links the name when there's a url and joins issuer and year", () => {
+    const markup = html(<Resume resume={withCerts} sections={["certifications"]} />);
+    expect(markup).toContain('<li><a href="https://example.org/verify">CTFL</a>, ASTQB, 2017</li>');
+    expect(markup).toContain("<li>Linux Essentials</li>");
+  });
+
+  it("follows a custom order, e.g. right after education", () => {
+    const markup = html(<Resume resume={withCerts} sections={["education", "certifications", "skills"]} />);
+    const [education, certifications, skills] = order(
+      markup,
+      "<h2>Education</h2>",
+      "<h2>Certifications</h2>",
+      "<h2>Skills</h2>",
+    );
+    expect(education).toBeLessThan(certifications);
+    expect(certifications).toBeLessThan(skills);
+  });
+
+  it("renders nothing when there are no certifications", () => {
+    expect(html(<Resume resume={resume} sections={["certifications"]} />)).toBe('<div class="resume"></div>');
+  });
+});
+
 describe("<ContactLinks>", () => {
   it("renders one link per contact field, without icons by default", () => {
     const markup = html(<ContactLinks info={resume.contact_info} />);

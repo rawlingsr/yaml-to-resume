@@ -1,3 +1,4 @@
+export { Certifications } from "./certifications";
 export { ContactLinks, type RenderContactIcon } from "./contact-links";
 export { Education } from "./education";
 export { Experience } from "./experience";
