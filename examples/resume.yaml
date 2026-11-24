@@ -73,3 +73,11 @@ skills:
     keywords: [TypeScript, JavaScript, React, Node.js, SQL]
   - name: Practices
     keywords: [Accessibility, Automated Testing, Code Review]
+
+# Optional. Only `name` is required. `year` is a plain four-digit year, and `url`
+# (a full http or https URL, e.g. a verification page) turns the name into a link.
+certifications:
+  - name: Example Accessibility Specialist
+    issuer: Example Certification Board
+    year: 2022
+    url: https://example.org/verify/alex-rivera

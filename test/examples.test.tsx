@@ -31,6 +31,9 @@ describe("examples/", () => {
     expect(html).toContain("Present");
     expect(html).toContain("(Expected) ");
     expect(html).not.toContain("Old Internship Co");
+    expect(html).toContain(
+      '<a href="https://example.org/verify/alex-rivera">Example Accessibility Specialist</a>, Example Certification Board, 2022',
+    );
 
     // A full LinkedIn URL is used as written; a GitHub username becomes a URL.
     const hrefs = Object.fromEntries(contactLinks(resume.contact_info).map((l) => [l.type, l.href]));
