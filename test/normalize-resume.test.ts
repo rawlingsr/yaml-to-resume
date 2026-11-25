@@ -175,3 +175,38 @@ describe("shape validation", () => {
     );
   });
 });
+
+describe("dates", () => {
+  const start = (from: unknown) =>
+    normalizeResume({ companies: [{ name: "Acme", dates_worked: [from] }] }).companies[0].dates_worked?.[0];
+
+  it("reads a bare year as January 1 of that year, not as milliseconds", () => {
+    expect(start(2016)?.toISOString()).toBe("2016-01-01T00:00:00.000Z");
+    expect(start("2016")?.toISOString()).toBe("2016-01-01T00:00:00.000Z");
+  });
+
+  it("accepts YYYY-MM and YYYY-MM-DD as UTC dates", () => {
+    expect(start("2021-03")?.toISOString()).toBe("2021-03-01T00:00:00.000Z");
+    expect(start("2021-03-15")?.toISOString()).toBe("2021-03-15T00:00:00.000Z");
+  });
+
+  it("accepts a Date the YAML parser already made", () => {
+    const date = new Date(Date.UTC(2019, 5, 1));
+    expect(start(date)).toBe(date);
+  });
+
+  it("rejects loose or impossible dates instead of guessing", () => {
+    for (const from of ["1", "June 2016", "2020-13", "2020-02-30", "2020-1", 16, 2016.5, 20160, true, {}]) {
+      expect(() => start(from)).toThrow(/Invalid dates_worked start for company "Acme"/);
+    }
+  });
+
+  it("applies the same rules to graduation_date", () => {
+    expect(() => normalizeResume({ schools: [{ name: "U", graduation_date: "May 2015" }] })).toThrow(
+      /graduation_date for school "U"/,
+    );
+    expect(
+      normalizeResume({ schools: [{ name: "U", graduation_date: 2015 }] }).schools[0].graduation_date.toISOString(),
+    ).toBe("2015-01-01T00:00:00.000Z");
+  });
+});

@@ -73,16 +73,31 @@ function entryLabel(kind: string, name: unknown, index: number): string {
   return typeof name === "string" && name.trim() ? `${kind} "${name}"` : `${kind} #${index + 1}`;
 }
 
-// Throws instead of returning an Invalid Date, so bad YAML fails the build with a message that names the entry.
+const DATE_PATTERN = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
+
+// Accepts YYYY, YYYY-MM, or YYYY-MM-DD (as UTC midnight), a bare year written as a YAML number
+// (`new Date(2016)` would read it as milliseconds, i.e. 1970), or a Date the YAML parser already made.
+// Anything else, including loose strings like "June 2016" that `new Date` would guess at, throws an
+// error that names the entry, so bad YAML fails the build instead of rendering a wrong date.
 function parseDate(value: unknown, field: string): Date {
-  const date = value instanceof Date ? value : new Date(value as string);
-  if (value == null || value === "" || Number.isNaN(date.getTime())) {
-    throw new Error(
-      `Invalid ${field}: ${JSON.stringify(value)} in resume data. ` +
-      `Expected a date like 2023-11.`,
-    );
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value;
   }
-  return date;
+  if (typeof value === "number" && Number.isInteger(value) && value >= 1000 && value <= 9999) {
+    return new Date(Date.UTC(value, 0, 1));
+  }
+  const match = typeof value === "string" ? DATE_PATTERN.exec(value.trim()) : null;
+  if (match) {
+    const year = Number(match[1]);
+    const month = match[2] ? Number(match[2]) : 1;
+    const day = match[3] ? Number(match[3]) : 1;
+    const date = new Date(Date.UTC(year, month - 1, day));
+    // Date.UTC rolls 2020-13 into 2021-01 and 2020-02-30 into March; a round trip catches that.
+    if (date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day) {
+      return date;
+    }
+  }
+  invalid(field, value, "Expected a date like 2023-11 (YYYY, YYYY-MM, or YYYY-MM-DD).");
 }
 
 // `[from]` or `[from, null]` means "to Present".
