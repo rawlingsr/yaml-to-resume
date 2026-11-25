@@ -48,11 +48,15 @@ The fields:
 | `skills` | List of groups: `name` and `keywords` (list). |
 | `certifications` | Optional list: `name`, plus optional `issuer`, `date` (written like other dates, e.g. `2017-05-18`, `2017-05`, or `2017`; only the year is shown) and `url` (a full `http` or `https` link, such as a verification page, which makes the name a link). |
 
-**Dates** are written `YYYY-MM`, e.g. `2023-11`.
+**Dates** are written `YYYY-MM`, e.g. `2023-11`. A year on its own (`2016`) or a full date (`2023-11-15`) also works. Other formats, like `June 2016` or `11/2023`, are errors rather than guesses.
 
 - `dates_worked: [2021-03, 2023-11]` second date is interpreted as the end of a date range.
 - `dates_worked: [2021-03]` or `[2021-03, null]` means "from specified date to Present".
 - **To hide a company** without deleting it, leave out its `dates_worked`.
+
+**Lists** (`companies`, `positions`, `achievements`, `schools`, `skills`, `keywords`, `certifications`) must be YAML lists, written as `- item` lines or `[a, b]`. A single string where a list belongs is an error, so a forgotten `-` fails when the resume loads instead of breaking the page. Text fields can be written as numbers (handy for a phone number), but not as nested `key: value` pairs.
+
+**Websites** for companies and schools take a full `http`/`https` URL or a bare domain (`example.com` becomes `https://example.com`). Other kinds of links, such as `mailto:` or `data:`, are errors.
 
 **Contact links:**
 
@@ -198,13 +202,15 @@ Tip: the browser uses the page title as the default PDF filename, so set it to s
 Mistakes fail when the resume is loaded (so in Next.js, at build time), with a message naming the field:
 
 ```
-Invalid dates_worked start for company "Example Labs": "2021-13" in resume data. Expected a date like 2023-11.
+Invalid dates_worked start for company "Example Labs": "2021-13" in resume data. Expected a date like 2023-11 (YYYY, YYYY-MM, or YYYY-MM-DD).
 ```
 
 This covers:
 
 - malformed dates and empty `dates_worked: []`
 - a missing `graduation_date`
+- a field that should be a list but isn't, an entry that isn't `key: value` pairs, or `key: value` pairs where text belongs
+- a company or school `website` that isn't an `http`/`https` URL or a bare domain
 - a `github` or `linkedin` value that isn't a username or a URL on that site
 - a certification without a `name`, a malformed `date`, a leftover `year` field (renamed to `date`), or a `url` that isn't a full `http`/`https` URL
 - a file whose top level isn't a `key: value` mapping

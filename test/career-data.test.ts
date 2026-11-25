@@ -7,11 +7,11 @@ import {
   getSkills,
 } from "../src/index";
 
-// The getters accept raw parsed YAML, which doesn't match their declared types (dates are still strings).
-const companies = (value: unknown) => getCompanies({ companies: value } as never);
-const schools = (value: unknown) => getSchools({ schools: value } as never);
-const skills = (value: unknown) => getSkills({ skills: value } as never);
-const contactInfo = (value: unknown) => getContactInfo({ contact_info: value } as never);
+// The getters take raw parsed YAML and validate it themselves.
+const companies = (value: unknown) => getCompanies({ companies: value });
+const schools = (value: unknown) => getSchools({ schools: value });
+const skills = (value: unknown) => getSkills({ skills: value });
+const contactInfo = (value: unknown) => getContactInfo({ contact_info: value });
 const iso = (d: Date | null | undefined) => d?.toISOString().slice(0, 10) ?? d;
 
 describe("deepMerge", () => {

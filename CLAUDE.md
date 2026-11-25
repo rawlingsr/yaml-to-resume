@@ -72,7 +72,18 @@ dist/             # build output, gitignored
 - The top level of each file must be a YAML mapping. YAML syntax errors name the file. Only one override file is
   merged on top of the base.
 - `deepMerge`: objects merge key by key. Scalars, arrays, and `null` replace the base value, so overriding `skills`
-  or `companies` replaces the whole list.
+  or `companies` replaces the whole list. Keys named `__proto__`, `constructor`, or `prototype` are skipped at every
+  level (assigning `__proto__` would replace the merged object's prototype); the result is always a plain object.
+- Shape checks (`asList`, `asMapping`, `asText`, `asUrl` in `normalize.ts`) run in every getter, so a typo fails at
+  load time with an error naming the field instead of crashing a render:
+  - Lists (`schools`, `skills`, `keywords`, `companies`, `positions`, `achievements`, `certifications`): missing or
+    `null` → `[]`; anything else that isn't a list throws. Each entry must be a mapping.
+  - Text fields accept a string, number, or boolean (stored as a string; a phone number often parses as a number);
+    a mapping or list throws. Missing text becomes `""` (`undefined` for optional fields).
+  - Company and school `website`: a full http(s) URL, or a bare domain that gets `https://`; any other scheme
+    (`data:`, `javascript:`, `mailto:`) throws. Missing → `undefined`.
+  - `still_attending` counts only when it's the boolean `true`.
+  - Errors name an entry by its name, or by position (`company #2`) when it has none.
 - `certifications` is optional (missing or `null` → `[]`; a non-list throws). Each entry needs a non-blank `name`.
   `date` goes through `parseDate` like every other date, and `<Certifications>` shows only its UTC year. The 0.2.0
   field `year` was renamed to `date` before anyone else used the package; a leftover `year` throws an error that says
@@ -82,8 +93,11 @@ dist/             # build output, gitignored
 - Companies **without** `dates_worked` (missing or `null`) are silently dropped; that's how to hide a company.
   Position `dates_worked` is optional. Dates are `[from]` or `[from, to]`; a `to` of null or empty renders as
   "Present".
-- Malformed dates throw an error that names the entry: a bad value (e.g. `2020-13`), an empty `dates_worked: []`,
-  or a missing `graduation_date`.
+- `parseDate` is strict: `YYYY`, `YYYY-MM`, or `YYYY-MM-DD` strings (built with `Date.UTC`, with a round-trip check
+  that rejects `2020-13` or `2020-02-30`), a whole-number year 1000–9999 (a bare `2016` in YAML is a number, which
+  `new Date` would read as milliseconds, i.e. 1970), or a `Date` the YAML parser made. Loose strings that `new Date`
+  would guess at (`June 2016`, `1`) throw. Malformed dates throw an error that names the entry, as do an empty
+  `dates_worked: []` and a missing `graduation_date`.
 - `intro` resolves from `summary` or `objective` (summary wins).
 - `contact_info` may be missing or `null` (no contact links). `contactLinks()` owns the URL rules: `website` may be a
   bare domain (gets `https://`) or a full URL; `linkedin`/`github` may be a username or a full URL on that site; any
