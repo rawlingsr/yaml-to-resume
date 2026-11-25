@@ -31,4 +31,11 @@ describe("parseResumeYaml", () => {
   it("surfaces YAML syntax errors", () => {
     expect(() => parseResumeYaml("name: [unclosed")).toThrow();
   });
+
+  it("doesn't let a __proto__ key in the override change the merged object's prototype", () => {
+    const merged = parseResumeYaml("name: A", "__proto__:\n  polluted: true\nname: B") as Record<string, unknown>;
+    expect(Object.getPrototypeOf(merged)).toBe(Object.prototype);
+    expect(merged).toEqual({ name: "B" });
+    expect(merged.polluted).toBeUndefined();
+  });
 });

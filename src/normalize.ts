@@ -119,14 +119,25 @@ export function isPlainObject(value: unknown): value is Record<string, unknown> 
   return typeof value === "object" && value !== null && !Array.isArray(value) && !(value instanceof Date);
 }
 
+// Keys that would replace the merged object's prototype (assigning to `__proto__` does that) or shadow
+// its built-ins. Parsers create them as ordinary keys, so they're skipped rather than copied over.
+const UNSAFE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+
 // Objects merge recursively; scalars, arrays, and nulls in `override` replace the base value.
 export function deepMerge(base: unknown, override: unknown): unknown {
   if (!isPlainObject(base) || !isPlainObject(override)) {
     return override === undefined ? base : override;
   }
-  const result: Record<string, unknown> = { ...base };
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(base)) {
+    if (!UNSAFE_KEYS.has(key)) {
+      result[key] = value;
+    }
+  }
   for (const [key, value] of Object.entries(override)) {
-    result[key] = deepMerge(base[key], value);
+    if (!UNSAFE_KEYS.has(key)) {
+      result[key] = deepMerge(base[key], value);
+    }
   }
   return result;
 }

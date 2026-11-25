@@ -32,6 +32,25 @@ describe("deepMerge", () => {
     });
   });
 
+  it("ignores __proto__, constructor, and prototype keys instead of changing the result's prototype", () => {
+    // JSON.parse (like a YAML parser) creates "__proto__" as an ordinary own key, which assignment would misuse.
+    const override = JSON.parse('{"__proto__": {"polluted": true}, "constructor": {"x": 1}, "prototype": 2, "a": 2}');
+    const merged = deepMerge({ a: 1, nested: { b: 1 } }, override) as Record<string, unknown>;
+    expect(Object.getPrototypeOf(merged)).toBe(Object.prototype);
+    expect(merged.polluted).toBeUndefined();
+    expect(Object.keys(merged)).toEqual(["a", "nested"]);
+    expect(merged).toEqual({ a: 2, nested: { b: 1 } });
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+  });
+
+  it("ignores those keys in nested objects and in the base too", () => {
+    const base = JSON.parse('{"contact_info": {"__proto__": {"x": 1}, "email": "a@example.com"}}');
+    const override = JSON.parse('{"contact_info": {"__proto__": {"y": 1}, "phone": "1"}}');
+    const merged = deepMerge(base, override) as { contact_info: Record<string, unknown> };
+    expect(Object.getPrototypeOf(merged.contact_info)).toBe(Object.prototype);
+    expect(merged.contact_info).toEqual({ email: "a@example.com", phone: "1" });
+  });
+
   it("keeps the base value when the override is undefined", () => {
     expect(deepMerge({ a: 1 }, undefined)).toEqual({ a: 1 });
     expect(deepMerge({ a: 1 }, { a: undefined })).toEqual({ a: 1 });
