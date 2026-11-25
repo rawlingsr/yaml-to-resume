@@ -165,18 +165,6 @@ export function getSkills({ skills }: { skills?: unknown }): Skill[] {
 }
 
 
-// A plain year (2017 or "2017"). Never goes through `new Date`, which reads a bare number as milliseconds.
-function parseYear(value: unknown, owner: string): number {
-  const text = typeof value === "number" ? String(value) : value;
-  if (typeof text !== "string" || !/^\d{4}$/.test(text)) {
-    throw new Error(
-      `Invalid year for ${owner}: ${JSON.stringify(value)} in resume data. ` +
-      `Expected a four-digit year like 2017.`,
-    );
-  }
-  return Number(text);
-}
-
 function parseHttpUrl(value: unknown, owner: string): string {
   let url: URL | null = null;
   try {
@@ -194,30 +182,24 @@ function parseHttpUrl(value: unknown, owner: string): string {
 }
 
 export function getCertifications({ certifications }: { certifications?: unknown }): Certification[] {
-  if (certifications == null) {
-    return [];
-  }
-  if (!Array.isArray(certifications)) {
-    throw new Error(
-      `Invalid certifications: ${JSON.stringify(certifications)} in resume data. Expected a list.`,
-    );
-  }
-
-  return certifications.map((entry: unknown, index) => {
-    const raw = isPlainObject(entry) ? entry : {};
-    if (typeof raw.name !== "string" || raw.name.trim() === "") {
-      throw new Error(
-        `Invalid name for certification #${index + 1}: ${JSON.stringify(raw.name)} in resume data. ` +
-        `Every certification needs a name.`,
-      );
+  return asList(certifications, "certifications").map((entry, index) => {
+    const raw = asMapping(entry, `certification #${index + 1}`);
+    const name = asText(raw.name, `name for certification #${index + 1}`)?.trim();
+    if (!name) {
+      invalid(`name for certification #${index + 1}`, raw.name, "Every certification needs a name.");
     }
-    const owner = `certification "${raw.name}"`;
-    const certification: Certification = { name: raw.name };
-    if (raw.issuer != null && raw.issuer !== "") {
-      certification.issuer = String(raw.issuer);
+    const owner = `certification "${name}"`;
+    // `year` was the field name in 0.2.0; fail loudly rather than silently dropping the date.
+    if (raw.year != null) {
+      invalid(`year for ${owner}`, raw.year, "`year` was renamed to `date`, e.g. date: 2017 or date: 2017-05-18.");
     }
-    if (raw.year != null && raw.year !== "") {
-      certification.year = parseYear(raw.year, owner);
+    const certification: Certification = { name };
+    const issuer = asText(raw.issuer, `issuer for ${owner}`);
+    if (issuer) {
+      certification.issuer = issuer;
+    }
+    if (raw.date != null && raw.date !== "") {
+      certification.date = parseDate(raw.date, `date for ${owner}`);
     }
     if (raw.url != null && raw.url !== "") {
       certification.url = parseHttpUrl(raw.url, owner);

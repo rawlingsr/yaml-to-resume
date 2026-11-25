@@ -46,7 +46,7 @@ The fields:
 | `companies[].positions` | `title`, `description`, `achievements` (list), optional `dates_worked`. |
 | `schools` | `name`, `degree`, `description`, `website`, `graduation_date`, optional `still_attending: true` (Graduation date shown as "(Expected)"). |
 | `skills` | List of groups: `name` and `keywords` (list). |
-| `certifications` | Optional list: `name`, plus optional `issuer`, `year` (a four-digit year like `2017`) and `url` (a full `http` or `https` link, such as a verification page, which makes the name a link). |
+| `certifications` | Optional list: `name`, plus optional `issuer`, `date` (written like other dates, e.g. `2017-05-18`, `2017-05`, or `2017`; only the year is shown) and `url` (a full `http` or `https` link, such as a verification page, which makes the name a link). |
 
 **Dates** are written `YYYY-MM`, e.g. `2023-11`.
 
@@ -206,7 +206,7 @@ This covers:
 - malformed dates and empty `dates_worked: []`
 - a missing `graduation_date`
 - a `github` or `linkedin` value that isn't a username or a URL on that site
-- a certification without a `name`, a `year` that isn't four digits, or a `url` that isn't a full `http`/`https` URL
+- a certification without a `name`, a malformed `date`, a leftover `year` field (renamed to `date`), or a `url` that isn't a full `http`/`https` URL
 - a file whose top level isn't a `key: value` mapping
 - YAML syntax errors, which also name the file
 

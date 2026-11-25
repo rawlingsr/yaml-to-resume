@@ -55,7 +55,7 @@ tests. It includes `test/**/*.test.{ts,tsx}`.
 src/index.ts      # "." entry: types, parseResumeYaml, normalizeResume, getters, format helpers (no fs, no React)
 src/node.ts       # "./node" entry: readResumeYaml (raw merged), loadResume (normalized); explicit paths
 src/types.ts      # School, Skill, Certification, Company, Position, ContactInfo, DatesWorked, RawResume, Resume, Intro
-src/normalize.ts  # parseDate, parseDatesWorked, parseYear, parseHttpUrl, deepMerge, getters, normalizeResume
+src/normalize.ts  # asList/asMapping/asText/asUrl shape checks, parseDate, parseDatesWorked, parseHttpUrl, deepMerge, getters, normalizeResume
 src/parse.ts      # parseResumeYaml(text, overrideText?): YAML → merged RawResume
 src/format.ts     # monthYear, formatDateRange, contactLinks (contact URL rules + validation)
 src/react/        # "./react" entry: Resume, ResumeHeader, ContactLinks, Introduction, Education, Experience, Skills(WithKeywords), Certifications
@@ -74,9 +74,11 @@ dist/             # build output, gitignored
 - `deepMerge`: objects merge key by key. Scalars, arrays, and `null` replace the base value, so overriding `skills`
   or `companies` replaces the whole list.
 - `certifications` is optional (missing or `null` → `[]`; a non-list throws). Each entry needs a non-blank `name`.
-  `year` must be a four-digit year (number or string, stored as a number; never passed to `new Date`, which reads a
-  bare number as milliseconds). `url` must be a full `http:`/`https:` URL. Errors name the entry. `<Certifications>`
-  renders nothing for an empty list, which is why it's safe in `<Resume>`'s default sections (last).
+  `date` goes through `parseDate` like every other date, and `<Certifications>` shows only its UTC year. The 0.2.0
+  field `year` was renamed to `date` before anyone else used the package; a leftover `year` throws an error that says
+  so. `url` must be a full `http:`/`https:` URL (stricter than `website` fields, which also accept a bare domain).
+  Errors name the entry. `<Certifications>` renders nothing for an empty list, which is why it's safe in `<Resume>`'s
+  default sections (last).
 - Companies **without** `dates_worked` (missing or `null`) are silently dropped; that's how to hide a company.
   Position `dates_worked` is optional. Dates are `[from]` or `[from, to]`; a `to` of null or empty renders as
   "Present".

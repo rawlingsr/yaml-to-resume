@@ -17,8 +17,8 @@ export interface Skill {
 export interface Certification {
   name: string;
   issuer?: string;
-  /** The year earned, e.g. 2017. */
-  year?: number;
+  /** When it was earned (YYYY, YYYY-MM, or YYYY-MM-DD in the YAML). `<Certifications>` shows only the year. */
+  date?: Date;
   /** A verification page; when set, the name links to it. Always http(s). */
   url?: string;
 }

@@ -92,8 +92,8 @@ describe("certifications section", () => {
   const withCerts = {
     ...resume,
     certifications: [
-      { name: "CTFL", issuer: "ASTQB", year: 2017, url: "https://example.org/verify" },
-      { name: "Linux Essentials" },
+      { name: "Example Test Analyst", issuer: "Example Testing Board", date: new Date(Date.UTC(2019, 2, 14)), url: "https://example.org/verify" },
+      { name: "Sample Cloud Basics" },
     ],
   };
 
@@ -103,10 +103,10 @@ describe("certifications section", () => {
     expect(skills).toBeLessThan(certifications);
   });
 
-  it("links the name when there's a url and joins issuer and year", () => {
+  it("links the name when there's a url and joins issuer and the year of the date", () => {
     const markup = html(<Resume resume={withCerts} sections={["certifications"]} />);
-    expect(markup).toContain('<li><a href="https://example.org/verify">CTFL</a>, ASTQB, 2017</li>');
-    expect(markup).toContain("<li>Linux Essentials</li>");
+    expect(markup).toContain('<li><a href="https://example.org/verify">Example Test Analyst</a>, Example Testing Board, 2019</li>');
+    expect(markup).toContain("<li>Sample Cloud Basics</li>");
   });
 
   it("follows a custom order, e.g. right after education", () => {

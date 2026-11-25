@@ -13,7 +13,7 @@ export function Certifications({ certifications }: { certifications: Certificati
           <li key={index}>
             {certification.url ? <a href={certification.url}>{certification.name}</a> : certification.name}
             {certification.issuer ? `, ${certification.issuer}` : null}
-            {certification.year ? `, ${certification.year}` : null}
+            {certification.date ? `, ${certification.date.getUTCFullYear()}` : null}
           </li>
         ))}
       </ul>

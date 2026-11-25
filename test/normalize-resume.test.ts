@@ -57,39 +57,45 @@ describe("certifications", () => {
     expect(certs(null)).toEqual([]);
   });
 
-  it("keeps name, issuer, year, and url, and drops empty optional fields", () => {
+  it("keeps name, issuer, date, and url, and drops empty optional fields", () => {
     expect(
       certs([
-        { name: "CTFL", issuer: "ASTQB", year: 2017, url: "https://example.org/verify" },
-        { name: "Linux Essentials", issuer: "", year: "2025", url: null },
+        { name: "Example Test Analyst", issuer: "Example Testing Board", date: "2019-03-14", url: "https://example.org/verify" },
+        { name: "Sample Cloud Basics", issuer: "", date: 2021, url: null },
+        { name: "Bare" },
       ]),
     ).toEqual([
-      { name: "CTFL", issuer: "ASTQB", year: 2017, url: "https://example.org/verify" },
-      { name: "Linux Essentials", year: 2025 },
+      { name: "Example Test Analyst", issuer: "Example Testing Board", date: new Date(Date.UTC(2019, 2, 14)), url: "https://example.org/verify" },
+      { name: "Sample Cloud Basics", date: new Date(Date.UTC(2021, 0, 1)) },
+      { name: "Bare" },
     ]);
   });
 
   it("throws for a list that isn't a list", () => {
-    expect(() => certs({ name: "CTFL" })).toThrow(/Invalid certifications/);
+    expect(() => certs({ name: "Example Test Analyst" })).toThrow(/Invalid certifications/);
   });
 
   it("throws for a missing or blank name, naming the entry by position", () => {
-    expect(() => certs([{ name: "A" }, { issuer: "ASTQB" }])).toThrow(/certification #2/);
-    expect(() => certs(["CTFL"])).toThrow(/certification #1/);
+    expect(() => certs([{ name: "A" }, { issuer: "Example Testing Board" }])).toThrow(/certification #2/);
+    expect(() => certs(["Example Test Analyst"])).toThrow(/certification #1/);
     expect(() => certs([{ name: "  " }])).toThrow(/certification #1/);
   });
 
-  it("accepts only four-digit years", () => {
-    for (const year of ["2017-05", 17, 20170, "soon", 2017.5]) {
-      expect(() => certs([{ name: "CTFL", year }])).toThrow(/Invalid year for certification "CTFL"/);
+  it("parses date with the same rules as other dates", () => {
+    for (const date of ["May 2017", "2017-13", 17, "soon"]) {
+      expect(() => certs([{ name: "Example Test Analyst", date }])).toThrow(/Invalid date for certification "Example Test Analyst"/);
     }
+  });
+
+  it("rejects the old year field with a pointer to date", () => {
+    expect(() => certs([{ name: "Example Test Analyst", year: 2017 }])).toThrow(/year for certification "Example Test Analyst".*renamed to `date`/);
   });
 
   it("accepts only full http(s) urls", () => {
     for (const url of ["example.org/verify", "javascript:alert(1)", "data:text/html,hi", 42]) {
-      expect(() => certs([{ name: "CTFL", url }])).toThrow(/Invalid url for certification "CTFL"/);
+      expect(() => certs([{ name: "Example Test Analyst", url }])).toThrow(/Invalid url for certification "Example Test Analyst"/);
     }
-    expect(certs([{ name: "CTFL", url: "http://example.org" }])[0].url).toBe("http://example.org");
+    expect(certs([{ name: "Example Test Analyst", url: "http://example.org" }])[0].url).toBe("http://example.org");
   });
 });
 
