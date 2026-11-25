@@ -9,8 +9,8 @@ export function Certifications({ certifications }: { certifications: Certificati
     <article className="resume-certifications">
       <h2>Certifications</h2>
       <ul className="resume-certification-list">
-        {certifications.map((certification) => (
-          <li key={`${certification.name}-${certification.year ?? ""}`}>
+        {certifications.map((certification, index) => (
+          <li key={index}>
             {certification.url ? <a href={certification.url}>{certification.name}</a> : certification.name}
             {certification.issuer ? `, ${certification.issuer}` : null}
             {certification.year ? `, ${certification.year}` : null}

@@ -5,7 +5,7 @@ export function Education({ schools }: { schools: School[] }) {
   return (
     <article className="resume-education">
       <h2>Education</h2>
-      {schools.map((school) => <Institution key={school.degree} school={school} />)}
+      {schools.map((school, index) => <Institution key={index} school={school} />)}
     </article>
   );
 }

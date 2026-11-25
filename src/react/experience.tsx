@@ -55,8 +55,8 @@ function PositionExperience({ position }: { position: Position }) {
       </h4>
       <p className="resume-description">{position.description}</p>
       <ul>
-        {position.achievements?.map((achievement) => (
-          <li key={achievement}>{achievement}</li>
+        {position.achievements?.map((achievement, index) => (
+          <li key={index}>{achievement}</li>
         ))}
       </ul>
     </div>

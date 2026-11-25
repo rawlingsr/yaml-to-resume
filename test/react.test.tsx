@@ -169,3 +169,27 @@ describe("<ResumeHeader>", () => {
     expect(markup).toContain('<a href="/" class="resume-header-home"><div><h1>A</h1></div></a>');
   });
 });
+
+// List keys are indexes rather than the item text, so repeated text can't produce duplicate keys.
+// Index keys are safe here because resume lists never change after render (no reordering,
+// inserting, or filtering) and the items have no state; that's not true of lists in general.
+// React's server renderer doesn't warn about duplicate keys, so this only checks that every
+// repeated item renders.
+describe("duplicate text", () => {
+  it("renders repeated achievements, keywords, schools, and certifications", () => {
+    const duplicates = normalizeResume({
+      companies: [{ name: "Co", dates_worked: ["2020-01"], positions: [{ title: "Dev", achievements: ["Same", "Same"] }] }],
+      skills: [{ name: "Langs", keywords: ["TS", "TS"] }, { name: "Langs", keywords: [] }],
+      schools: [
+        { name: "U", degree: "BS", graduation_date: "2015-05" },
+        { name: "U2", degree: "BS", graduation_date: "2016-05" },
+      ],
+      certifications: [{ name: "Cert" }, { name: "Cert" }],
+    });
+    const markup = html(<Resume resume={duplicates} />);
+    expect(markup).toContain("<li>Same</li><li>Same</li>");
+    expect(markup).toContain("<li>TS</li><li>TS</li>");
+    expect(markup).toContain("<li>Cert</li><li>Cert</li>");
+    expect(markup.match(/<h4>BS<\/h4>/g)).toHaveLength(2);
+  });
+});

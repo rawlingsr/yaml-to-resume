@@ -5,7 +5,7 @@ export function Skills({ skills }: { skills: Skill[] }) {
     <article className="resume-skills">
       <h2>Skills</h2>
       <ul className="resume-skill-list">
-        {skills.map((skill) => <li key={skill.name}>{skill.name}</li>)}
+        {skills.map((skill, index) => <li key={index}>{skill.name}</li>)}
       </ul>
     </article>
   );
@@ -16,8 +16,8 @@ export function SkillsWithKeywords({ skills }: { skills: Skill[] }) {
     <article className="resume-skills">
       <h2>Skills</h2>
       <ul className="resume-skill-list-keywords">
-        {skills.map((skill) => (
-          <li key={skill.name}>
+        {skills.map((skill, index) => (
+          <li key={index}>
             {skill.name}
             <Keywords keywords={skill.keywords} />
           </li>
@@ -33,7 +33,7 @@ function Keywords({ keywords }: { keywords?: string[] }) {
   }
   return (
     <ul className="resume-skill-keywords">
-      {keywords.map((keyword) => <li key={keyword}>{keyword}</li>)}
+      {keywords.map((keyword, index) => <li key={index}>{keyword}</li>)}
     </ul>
   );
 }
