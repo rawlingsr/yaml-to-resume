@@ -2,7 +2,8 @@ export interface School {
   name: string;
   degree: string;
   description: string;
-  website: string;
+  /** Always an http(s) URL; a bare domain in the YAML gets https:// added. */
+  website?: string;
   graduation_date: Date;
   still_attending: boolean;
 }
@@ -27,9 +28,9 @@ export interface Company {
   dates_worked?: DatesWorked;
   description: string;
   location: string;
-  website: string;
+  /** Always an http(s) URL; a bare domain in the YAML gets https:// added. */
+  website?: string;
   positions: Position[];
-
 }
 
 export interface Position {

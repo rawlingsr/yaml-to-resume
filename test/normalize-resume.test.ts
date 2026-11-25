@@ -92,3 +92,86 @@ describe("certifications", () => {
     expect(certs([{ name: "CTFL", url: "http://example.org" }])[0].url).toBe("http://example.org");
   });
 });
+
+describe("shape validation", () => {
+  const company = (extra: Record<string, unknown>) => ({ name: "Acme", dates_worked: ["2020-01"], ...extra });
+
+  it("throws for sections that aren't lists, naming the field", () => {
+    expect(() => normalizeResume({ schools: { name: "U" } })).toThrow(/Invalid schools: .* Expected a list/);
+    expect(() => normalizeResume({ skills: "TypeScript" })).toThrow(/Invalid skills/);
+    // A string used to be iterated character by character and silently dropped.
+    expect(() => normalizeResume({ companies: "hello" })).toThrow(/Invalid companies/);
+  });
+
+  it("throws for entries that aren't key: value pairs", () => {
+    expect(() => normalizeResume({ schools: ["U"] })).toThrow(/school #1/);
+    expect(() => normalizeResume({ companies: [company({ positions: ["Engineer"] })] })).toThrow(
+      /position #1 at "Acme"/,
+    );
+  });
+
+  it("throws at load time for achievements or keywords written as a single string", () => {
+    expect(() =>
+      normalizeResume({ companies: [company({ positions: [{ title: "Dev", achievements: "did stuff" }] })] }),
+    ).toThrow(/achievements for position "Dev" at "Acme"/);
+    expect(() => normalizeResume({ skills: [{ name: "Langs", keywords: "TypeScript" }] })).toThrow(
+      /keywords for skill group "Langs"/,
+    );
+  });
+
+  it("throws for a mapping where text is expected", () => {
+    expect(() => normalizeResume({ contact_info: { email: { a: 1 } } })).toThrow(/contact_info\.email/);
+    expect(() => normalizeResume({ companies: [company({ description: ["a", "b"] })] })).toThrow(
+      /description for company "Acme"/,
+    );
+    expect(() => normalizeResume({ contact_info: ["github: x"] })).toThrow(/Invalid contact_info/);
+  });
+
+  it("turns numbers and booleans into text, e.g. a phone number", () => {
+    const resume = normalizeResume({
+      contact_info: { phone: 5555550100 },
+      skills: [{ name: "Years", keywords: [2020, true] }],
+    });
+    expect(resume.contact_info.phone).toBe("5555550100");
+    expect(resume.skills[0].keywords).toEqual(["2020", "true"]);
+  });
+
+  it("keeps http(s) websites, adds https:// to a bare domain, and rejects other schemes", () => {
+    const resume = normalizeResume({
+      companies: [
+        company({ website: "https://acme.example/jobs" }),
+        company({ name: "Beta", website: "beta.example" }),
+        company({ name: "Gamma" }),
+      ],
+      schools: [{ name: "U", graduation_date: "2015-05", website: "http://u.example" }],
+    });
+    expect(resume.companies.map((c) => c.website)).toEqual([
+      "https://acme.example/jobs",
+      "https://beta.example",
+      undefined,
+    ]);
+    expect(resume.schools[0].website).toBe("http://u.example");
+
+    for (const website of ["data:text/html,hi", "javascript:alert(1)", "mailto:a@b.example", "https://"]) {
+      expect(() => normalizeResume({ companies: [company({ website })] })).toThrow(/website for company "Acme"/);
+    }
+    expect(() => normalizeResume({ schools: [{ name: "U", graduation_date: "2015-05", website: "data:x" }] }))
+      .toThrow(/website for school "U"/);
+  });
+
+  it("treats still_attending as true only when it's really true", () => {
+    const schools = normalizeResume({
+      schools: [
+        { name: "A", graduation_date: "2015-05", still_attending: true },
+        { name: "B", graduation_date: "2015-05", still_attending: "false" },
+      ],
+    }).schools;
+    expect(schools.map((s) => s.still_attending)).toEqual([true, false]);
+  });
+
+  it("names unnamed entries by position", () => {
+    expect(() => normalizeResume({ companies: [company({}), { dates_worked: ["2020-13"] }] })).toThrow(
+      /company #2/,
+    );
+  });
+});

@@ -39,7 +39,7 @@ export interface ContactLink {
   value: string;
 }
 
-const isHttpUrl = (value: string) => /^https?:\/\//i.test(value);
+export const isHttpUrl = (value: string) => /^https?:\/\//i.test(value);
 
 // A value that is already a full http(s) URL is used as written; otherwise `build` turns it into one.
 function urlOr(build: (value: string) => string) {
